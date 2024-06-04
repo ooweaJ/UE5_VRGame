@@ -67,8 +67,12 @@ void AVRCharacter::BeginPlay()
 		const UBasicInputDataConfig* BasicInputDataConfig = GetDefault<UBasicInputDataConfig>();
 		Subsystem->AddMappingContext(BasicInputDataConfig->InputMappingContext, 0);
 
-		const UVRHandsAnimationInputDataConfig* VRInputDataConfig = GetDefault<UVRHandsAnimationInputDataConfig>();
-		Subsystem->AddMappingContext(VRInputDataConfig->InputMappingContext, 0);
+		const UVRHandsInputDataConfig* VRHandsInputDataConfig = GetDefault<UVRHandsInputDataConfig>();
+		Subsystem->AddMappingContext(VRHandsInputDataConfig->InputMappingContext, 0);
+
+		// HandGraphLeft, HandGraphRight
+		const UVRHandsAnimationInputDataConfig* VRHandsAnimationInputDataConfig = GetDefault<UVRHandsAnimationInputDataConfig>();
+		Subsystem->AddMappingContext(VRHandsAnimationInputDataConfig->InputMappingContext, 1);
 	}
 	else { check(false); }
 }

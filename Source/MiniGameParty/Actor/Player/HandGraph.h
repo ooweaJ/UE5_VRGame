@@ -59,7 +59,7 @@ public:
 
 
 UCLASS()
-class UHandGraph : public UObject
+class  UHandGraph : public UObject
 {
 	GENERATED_BODY()
 

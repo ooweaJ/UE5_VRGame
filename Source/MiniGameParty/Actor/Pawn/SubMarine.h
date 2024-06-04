@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Components/SubMarineMovementComponent.h"
 #include "SubMarine.generated.h"
 
 UCLASS()
@@ -19,13 +20,20 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+public:
+	void OnEngine();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	class USubMarineMovementComponent* SubMarineMovementComponent;
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	USubMarineMovementComponent* SubMarineMovementComponent;
 
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* Sphere;
 
 	UPROPERTY(EditAnywhere)
 	float GravityScale = 1.f;
+
+private:
+	ESubmarineGear CurrentGear;
 };

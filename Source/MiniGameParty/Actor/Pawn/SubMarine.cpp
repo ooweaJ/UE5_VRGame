@@ -1,6 +1,5 @@
 #include "Actor/Pawn/SubMarine.h"
 #include "Components/SphereComponent.h"
-#include "Components/SubMarineMovementComponent.h"
 
 ASubMarine::ASubMarine()
 {
@@ -23,12 +22,17 @@ void ASubMarine::BeginPlay()
 void ASubMarine::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 }
 
 void ASubMarine::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+}
+
+void ASubMarine::OnEngine()
+{
 
 }
 
