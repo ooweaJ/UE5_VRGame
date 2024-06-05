@@ -3,6 +3,18 @@
 
 UVRHandsInputDataConfig::UVRHandsInputDataConfig()
 {
+	{
+		static ConstructorHelpers::FObjectFinder<UInputMappingContext> Asset
+		{ TEXT("/Script/EnhancedInput.InputMappingContext'/Game/_Dev/Player/Input/VRHandInput/IMC_VRInput.IMC_VRInput'") };
+		check(Asset.Object);
+		InputMappingContext = Asset.Object;
+	}
+	{
+		static ConstructorHelpers::FObjectFinder<UInputAction> Asset
+		{ TEXT("/Script/EnhancedInput.InputAction'/Game/_Dev/Player/Input/VRHandInput/IA_Index_Left.IA_Index_Left'") };
+		check(Asset.Object);
+		IA_IndexCurl_Left = Asset.Object;
+	}
 }
 
 

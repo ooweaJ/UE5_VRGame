@@ -24,9 +24,26 @@ public:
 	void OnEngine();
 
 
+	UFUNCTION()
+	void OnGearBtnClicked();
+	UFUNCTION()
+	void OnGear2BtnClicked();
+	UFUNCTION()
+	void OnGear3BtnClicked();
+	UFUNCTION()
+	void OnRidingBtnClicked();
+	UFUNCTION()
+	void OnAutoBtnClicked();
+
+private:
+	void ChangeGear(ESubmarineGear InputGear);
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	USubMarineMovementComponent* SubMarineMovementComponent;
+
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* SubMarine;
 
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* Sphere;
@@ -34,6 +51,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	float GravityScale = 1.f;
 
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* Menu;
+
+	class UUI_SubMarine* SubMarineMenu;
+
 private:
-	ESubmarineGear CurrentGear;
+	bool bAuto;
 };

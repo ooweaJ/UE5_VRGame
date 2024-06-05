@@ -2,6 +2,7 @@
 #include "Components/SphereComponent.h"
 #include "Actor/Pawn/SubMarine.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 USubMarineMovementComponent::USubMarineMovementComponent()
 {
@@ -23,7 +24,7 @@ void USubMarineMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
     //FVector TargetVelocity = UKismetMathLibrary::VInterpTo(Velocity, FVector::Zero(), DeltaTime, 5 * InterpSpeed);
     //Velocity = TargetVelocity;
 
-    OnGravity(DeltaTime);
+    CollisionDetection(DeltaTime);
 }
 
 float USubMarineMovementComponent::GetGravityZ() const
@@ -36,7 +37,12 @@ void USubMarineMovementComponent::SetPawnOwner(ASubMarine* Pawn)
     OwnerPawn = Pawn;
 }
 
-void USubMarineMovementComponent::OnGravity(float DeltaTime)
+void USubMarineMovementComponent::OffBlockingDelay()
+{
+    bBlocking = false;
+}
+
+void USubMarineMovementComponent::CollisionDetection(float DeltaTime)
 {
     if (!OwnerPawn || !UpdatedComponent || ShouldSkipUpdate(DeltaTime))
     {
@@ -56,6 +62,9 @@ void USubMarineMovementComponent::OnGravity(float DeltaTime)
             FVector ImpactDirection = Hit.ImpactNormal;
             DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + ImpactDirection * 100.f, FColor::Green, false, 10.f, 0, 1.f);
             float DotProduct = FVector::DotProduct(ImpactDirection, Velocity.GetSafeNormal());
+
+            float DelaySize = Velocity.Size() / MaxSpeedGear[(int32)ESubmarineGear::Gear3];
+
             if (DotProduct < -0.5)
             {
                 FVector ReflectionDirection = UKismetMathLibrary::GetReflectionVector(Velocity, Hit.Normal).GetSafeNormal();
@@ -78,23 +87,47 @@ void USubMarineMovementComponent::OnGravity(float DeltaTime)
                 Velocity = UKismetMathLibrary::GetReflectionVector(Velocity, Hit.Normal) * ( 1.f + DotProduct);
             }
 
+            BlockingDelayInputTime(DelaySize);
         }
     }
 }
 
-void USubMarineMovementComponent::UpdateMaxSpeed(ESubmarineGear CurrentGear)
+void USubMarineMovementComponent::BlockingDelayInputTime(float DelayTime)
 {
-    switch (CurrentGear)
+    bBlocking = true;
+    UKismetSystemLibrary::K2_SetTimer(this, "OffBlockingDelay", DelayTime, false);
+}
+
+
+void USubMarineMovementComponent::UpdateMaxSpeed(ESubmarineGear InputGear)
+{
+    switch (InputGear)
     {
     case ESubmarineGear::Gear1:
+        CurrentGear = InputGear;
         MaxSpeed = MaxSpeedGear[(int32)ESubmarineGear::Gear1];
         break;
     case ESubmarineGear::Gear2:
+        CurrentGear = InputGear;
         MaxSpeed = MaxSpeedGear[(int32)ESubmarineGear::Gear2];
         break;
     case ESubmarineGear::Gear3:
+        CurrentGear = InputGear;
         MaxSpeed = MaxSpeedGear[(int32)ESubmarineGear::Gear3];
         break;
+    }
+}
+
+void USubMarineMovementComponent::InputVector(FVector Input)
+{
+
+    Velocity += Input;
+
+    float CurrentSpeed = Velocity.Size();
+
+    if (CurrentSpeed > MaxSpeed)
+    {
+        Velocity = Velocity.GetSafeNormal() * MaxSpeed;
     }
 }
 

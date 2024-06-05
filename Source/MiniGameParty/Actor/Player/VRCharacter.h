@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "MotionControllerComponent.h"
 #include "Components/VRHandMeshComponent.h"
+#include "Components/WidgetInteractionComponent.h"
 #include "Animation/VRAnimInstance.h"
 #include "Actor/Player/HandGraph.h"
 #include "VRCharacter.generated.h"
@@ -43,6 +44,12 @@ public:
 	void OnGrabRightCompleted(const FInputActionValue& InputActionValue) { OnGrabCompleted(MotionControllerRight, InputActionValue); }
 	void OnGrabCompleted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue);
 
+	void OnLeftIndexTriggered(const FInputActionValue& InputActionValue);
+
+public:
+	FORCEINLINE void OnRiding() { bRiding = true; }
+	FORCEINLINE void OffRiding() { bRiding = false; }
+
 protected:
 	void OnMove(const FInputActionValue& InputActionValue);
 
@@ -64,4 +71,12 @@ protected:
 	UHandGraph* HandGraphLeft;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UHandGraph* HandGraphRight;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UWidgetInteractionComponent* LeftInteraction;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UWidgetInteractionComponent* RightInteraction;
+
+private:
+	bool bRiding;
 };

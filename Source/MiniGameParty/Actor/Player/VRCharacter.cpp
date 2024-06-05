@@ -54,11 +54,10 @@ AVRCharacter::AVRCharacter()
 	}
 }
 
-// Called when the game starts or when spawned
 void AVRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -102,6 +101,7 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Started, this, &ThisClass::OnGrabRightStarted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Completed, this, &ThisClass::OnGrabRightCompleted);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Left, ETriggerEvent::Triggered, this, &ThisClass::OnLeftIndexTriggered);
 	}
 	{
 		HandGraphLeft->SetupPlayerInputComponent(MotionControllerLeft, EnhancedInputComponent);
@@ -112,21 +112,28 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AVRCharacter::OnMove(const FInputActionValue& InputActionValue)
 {
-	const FVector2D ActionValue = InputActionValue.Get<FVector2D>();
-
-	const FRotator CameraRotator = VRCamera->GetRelativeRotation();
-	const FRotator CameraYawRotator = FRotator(0., CameraRotator.Yaw, 0.);
-
-	if (!FMath::IsNearlyZero(ActionValue.Y))
+	if (bRiding)
 	{
-		const FVector ForwardVector = UKismetMathLibrary::GetForwardVector(CameraYawRotator);
-		AddMovementInput(ForwardVector, ActionValue.Y);
+
 	}
-
-	if (!FMath::IsNearlyZero(ActionValue.X))
+	else
 	{
-		const FVector RightVector = UKismetMathLibrary::GetRightVector(CameraYawRotator);
-		AddMovementInput(RightVector, ActionValue.X);
+		const FVector2D ActionValue = InputActionValue.Get<FVector2D>();
+
+		const FRotator CameraRotator = VRCamera->GetRelativeRotation();
+		const FRotator CameraYawRotator = FRotator(0., CameraRotator.Yaw, 0.);
+
+		if (!FMath::IsNearlyZero(ActionValue.Y))
+		{
+			const FVector ForwardVector = UKismetMathLibrary::GetForwardVector(CameraYawRotator);
+			AddMovementInput(ForwardVector, ActionValue.Y);
+		}
+
+		if (!FMath::IsNearlyZero(ActionValue.X))
+		{
+			const FVector RightVector = UKismetMathLibrary::GetRightVector(CameraYawRotator);
+			AddMovementInput(RightVector, ActionValue.X);
+		}
 	}
 }
 
@@ -138,4 +145,9 @@ void AVRCharacter::OnGrabStarted(UMotionControllerComponent* MotionControllerCom
 void AVRCharacter::OnGrabCompleted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue)
 {
 	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.f, FColor::Red, TEXT("OnGrabCompleted"));
+}
+
+void AVRCharacter::OnLeftIndexTriggered(const FInputActionValue& InputActionValue)
+{
+	RightInteraction->PressPointerKey(EKeys::LeftMouseButton);
 }

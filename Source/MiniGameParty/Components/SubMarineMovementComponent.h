@@ -32,17 +32,27 @@ public:
     virtual float GetGravityZ() const override;
 
 public:
+    FORCEINLINE ESubmarineGear GetCurrentGear() { return CurrentGear; }
+
     void SetPawnOwner(class ASubMarine* Pawn);
-    void UpdateMaxSpeed(ESubmarineGear CurrentGear);
-    
-private:
-    void OnGravity(float DeltaTime);
+    void UpdateMaxSpeed(ESubmarineGear InputGear);
+    void InputVector(FVector Input);
 
 private:
+    UFUNCTION()
+    void OffBlockingDelay();
+
+private:
+    void CollisionDetection(float DeltaTime);
+    void BlockingDelayInputTime(float DelayTime);
+
+private:
+    ESubmarineGear CurrentGear;
 
     // SubMarine
     class USphereComponent* Sphere;
     class ASubMarine* OwnerPawn;
     float MaxSpeedGear[(int32)ESubmarineGear::Max] = { 100, 200, 300 };
     float InterpSpeed = 0.1f;
+    bool bBlocking;
 };
