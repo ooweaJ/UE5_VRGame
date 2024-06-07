@@ -17,3 +17,11 @@ void UUI_SubMarine::SelectGear(int32 SelectIndex)
 			Gears[i]->SetBackgroundColor(FLinearColor(1, 1, 1));
 	}
 }
+
+void UUI_SubMarine::SelectAuto(bool IsAuto)
+{
+	if (IsAuto)
+		Auto->SetBackgroundColor(FLinearColor(1, 0, 0));
+	else
+		Auto->SetBackgroundColor(FLinearColor(1, 1, 1));
+}

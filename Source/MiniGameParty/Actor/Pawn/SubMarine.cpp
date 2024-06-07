@@ -63,6 +63,10 @@ void ASubMarine::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	if (bAuto)
+	{
+		SubMarineMovementComponent->InputVector(GetActorForwardVector());
+	}
 }
 
 void ASubMarine::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -71,26 +75,38 @@ void ASubMarine::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 }
 
-void ASubMarine::OnEngine()
+void ASubMarine::OnAuto()
 {
+	if (bAuto)
+	{
+		bAuto = false;
+		SubMarineMenu->SelectAuto(bAuto);
+	}
+	else
+	{
+		bAuto = true;
+		SubMarineMenu->SelectAuto(bAuto);
+	}
+}
 
+void ASubMarine::OnRiding()
+{
 }
 
 void ASubMarine::OnGearBtnClicked() { ChangeGear(ESubmarineGear::Gear1); }
 void ASubMarine::OnGear2BtnClicked() { ChangeGear(ESubmarineGear::Gear2); }
 void ASubMarine::OnGear3BtnClicked() { ChangeGear(ESubmarineGear::Gear3); }
-void ASubMarine::OnRidingBtnClicked()
-{
-}
-void ASubMarine::OnAutoBtnClicked()
-{
-}
+void ASubMarine::OnRidingBtnClicked() { OnRiding(); }
+void ASubMarine::OnAutoBtnClicked() { OnAuto(); }
 
 void ASubMarine::ChangeGear(ESubmarineGear InputGear)
 {
 	ESubmarineGear CurrentGear = SubMarineMovementComponent->GetCurrentGear();
 	if (CurrentGear == InputGear) return;
 	else
+	{
+		SubMarineMovementComponent->UpdateMaxSpeed(InputGear);
 		SubMarineMenu->SelectGear((int32)InputGear);
+	}
 }
 

@@ -15,7 +15,7 @@ protected:
 
 public:
 	void SelectGear(int32 SelectIndex);
-
+	void SelectAuto(bool IsAuto);
 public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* Gear;

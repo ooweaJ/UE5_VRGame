@@ -11,5 +11,5 @@ struct MINIGAMEPARTY_API FCollisionPresetNameTable
 
 struct MINIGAMEPARTY_API FCollisionChannel
 {
-	
+	static inline ECollisionChannel WorldUI = ECollisionChannel::ECC_GameTraceChannel2;
 };

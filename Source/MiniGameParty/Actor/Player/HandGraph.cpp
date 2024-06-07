@@ -15,6 +15,12 @@ UVRHandsInputDataConfig::UVRHandsInputDataConfig()
 		check(Asset.Object);
 		IA_IndexCurl_Left = Asset.Object;
 	}
+	{
+		static ConstructorHelpers::FObjectFinder<UInputAction> Asset
+		{ TEXT("/Script/EnhancedInput.InputAction'/Game/_Dev/Player/Input/VRHandInput/IA_Index_Right.IA_Index_Right'") };
+		check(Asset.Object);
+		IA_IndexCurl_Right = Asset.Object;
+	}
 }
 
 

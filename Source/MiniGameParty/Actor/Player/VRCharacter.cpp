@@ -52,6 +52,17 @@ AVRCharacter::AVRCharacter()
 		LeftHand->bMirror = true;
 		LeftHand->SetAnimClass(AnimClass.Class);
 	}
+
+	LeftInteraction = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("LeftInteraction"));
+	RightInteraction = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("RightInteraction"));
+
+	LeftInteraction->SetupAttachment(MotionControllerLeft);
+	RightInteraction->SetupAttachment(MotionControllerRight);
+
+	LeftInteraction->bShowDebug = true;
+	LeftInteraction->TraceChannel = FCollisionChannel::WorldUI;
+	RightInteraction->bShowDebug = true;
+	RightInteraction->TraceChannel = FCollisionChannel::WorldUI;
 }
 
 void AVRCharacter::BeginPlay()
@@ -102,6 +113,9 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Started, this, &ThisClass::OnGrabRightStarted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Completed, this, &ThisClass::OnGrabRightCompleted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Left, ETriggerEvent::Triggered, this, &ThisClass::OnLeftIndexTriggered);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Left, ETriggerEvent::Completed, this, &ThisClass::OnLeftIndexCompleted);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Right, ETriggerEvent::Triggered, this, &ThisClass::OnRightIndexTriggered);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Right, ETriggerEvent::Completed, this, &ThisClass::OnRightIndexCompleted);
 	}
 	{
 		HandGraphLeft->SetupPlayerInputComponent(MotionControllerLeft, EnhancedInputComponent);
@@ -149,5 +163,20 @@ void AVRCharacter::OnGrabCompleted(UMotionControllerComponent* MotionControllerC
 
 void AVRCharacter::OnLeftIndexTriggered(const FInputActionValue& InputActionValue)
 {
+	LeftInteraction->PressPointerKey(EKeys::LeftMouseButton);
+}
+
+void AVRCharacter::OnLeftIndexCompleted(const FInputActionValue& InputActionValue)
+{
+	LeftInteraction->ReleasePointerKey(EKeys::LeftMouseButton);
+}
+
+void AVRCharacter::OnRightIndexTriggered(const FInputActionValue& InputActionValue)
+{
 	RightInteraction->PressPointerKey(EKeys::LeftMouseButton);
+}
+
+void AVRCharacter::OnRightIndexCompleted(const FInputActionValue& InputActionValue)
+{
+	RightInteraction->ReleasePointerKey(EKeys::LeftMouseButton);
 }

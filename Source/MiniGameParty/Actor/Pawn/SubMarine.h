@@ -21,8 +21,8 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 public:
-	void OnEngine();
-
+	void OnAuto();
+	void OnRiding();
 
 	UFUNCTION()
 	void OnGearBtnClicked();

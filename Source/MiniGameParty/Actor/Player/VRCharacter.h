@@ -45,7 +45,9 @@ public:
 	void OnGrabCompleted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue);
 
 	void OnLeftIndexTriggered(const FInputActionValue& InputActionValue);
-
+	void OnLeftIndexCompleted(const FInputActionValue& InputActionValue);
+	void OnRightIndexTriggered(const FInputActionValue& InputActionValue);
+	void OnRightIndexCompleted(const FInputActionValue& InputActionValue);
 public:
 	FORCEINLINE void OnRiding() { bRiding = true; }
 	FORCEINLINE void OffRiding() { bRiding = false; }
@@ -72,9 +74,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UHandGraph* HandGraphRight;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UWidgetInteractionComponent* LeftInteraction;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UWidgetInteractionComponent* RightInteraction;
 
 private:

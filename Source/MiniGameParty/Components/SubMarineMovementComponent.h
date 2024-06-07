@@ -52,7 +52,7 @@ private:
     // SubMarine
     class USphereComponent* Sphere;
     class ASubMarine* OwnerPawn;
-    float MaxSpeedGear[(int32)ESubmarineGear::Max] = { 100, 200, 300 };
+    float MaxSpeedGear[(int32)ESubmarineGear::Max] = { 300, 600, 900 };
     float InterpSpeed = 0.1f;
     bool bBlocking;
 };
