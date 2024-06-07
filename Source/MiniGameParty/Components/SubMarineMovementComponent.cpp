@@ -10,6 +10,8 @@ USubMarineMovementComponent::USubMarineMovementComponent()
 
 void USubMarineMovementComponent::BeginPlay()
 {
+
+    Velocity = FVector::ZeroVector;
     if (OwnerPawn)
     {
         Sphere = OwnerPawn->FindComponentByClass<USphereComponent>();
@@ -20,10 +22,12 @@ void USubMarineMovementComponent::BeginPlay()
 void USubMarineMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    
+    FVector DragForce = -Velocity.GetSafeNormal() * Velocity.SizeSquared() * Dragcoefficient;
 
-    //FVector TargetVelocity = UKismetMathLibrary::VInterpTo(Velocity, FVector::Zero(), DeltaTime, 5 * InterpSpeed);
-    //Velocity = TargetVelocity;
+    FVector NewVelocity = Velocity + DragForce * DeltaTime;
 
+    Velocity = NewVelocity;
     CollisionDetection(DeltaTime);
 }
 
@@ -37,10 +41,6 @@ void USubMarineMovementComponent::SetPawnOwner(ASubMarine* Pawn)
     OwnerPawn = Pawn;
 }
 
-void USubMarineMovementComponent::OffBlockingDelay()
-{
-    bBlocking = false;
-}
 
 void USubMarineMovementComponent::CollisionDetection(float DeltaTime)
 {
@@ -48,7 +48,6 @@ void USubMarineMovementComponent::CollisionDetection(float DeltaTime)
     {
         return;
     }
-   
 
     FVector DesiredMovementThisFrame = Velocity * DeltaTime;
 
@@ -77,7 +76,7 @@ void USubMarineMovementComponent::CollisionDetection(float DeltaTime)
                 }
                 else
                 {
-                    Velocity = UKismetMathLibrary::GetReflectionVector(Velocity, Hit.Normal) * (1.f + DotProduct);
+                    Velocity = UKismetMathLibrary::GetReflectionVector(Velocity, Hit.Normal) * (1.f + DotProduct + 0.3f);
                     DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + Velocity, FColor::Blue, false, 10.f, 0, 1.f);
                 }
             }
@@ -87,7 +86,7 @@ void USubMarineMovementComponent::CollisionDetection(float DeltaTime)
                 Velocity = UKismetMathLibrary::GetReflectionVector(Velocity, Hit.Normal) * ( 1.f + DotProduct);
             }
 
-            BlockingDelayInputTime(DelaySize);
+            BlockingDelayInputTime(1.f);
         }
     }
 }
@@ -98,6 +97,10 @@ void USubMarineMovementComponent::BlockingDelayInputTime(float DelayTime)
     UKismetSystemLibrary::K2_SetTimer(this, "OffBlockingDelay", DelayTime, false);
 }
 
+void USubMarineMovementComponent::OffBlockingDelay()
+{
+    bBlocking = false;
+}
 
 void USubMarineMovementComponent::UpdateMaxSpeed(ESubmarineGear InputGear)
 {
@@ -120,9 +123,9 @@ void USubMarineMovementComponent::UpdateMaxSpeed(ESubmarineGear InputGear)
 
 void USubMarineMovementComponent::InputVector(FVector Input)
 {
-
+    if (bBlocking) return;
     Velocity += Input;
-
+    
     float CurrentSpeed = Velocity.Size();
 
     if (CurrentSpeed > MaxSpeed)

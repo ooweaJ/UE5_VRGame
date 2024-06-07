@@ -23,6 +23,8 @@ public:
 public:
 	void OnAuto();
 	void OnRiding();
+	void InputThrottle(float Throttle);
+	void InputUPDown(float Value);
 
 	UFUNCTION()
 	void OnGearBtnClicked();
@@ -37,7 +39,7 @@ public:
 
 private:
 	void ChangeGear(ESubmarineGear InputGear);
-
+	void AddYaw();
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	USubMarineMovementComponent* SubMarineMovementComponent;
@@ -45,17 +47,42 @@ public:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* SubMarine;
 
+	UPROPERTY(EditAnywhere)
+	USceneComponent* SteeringOffSet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* SteeringWheel;
+
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* Sphere;
 
 	UPROPERTY(EditAnywhere)
 	float GravityScale = 1.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Steering")
+	float SteeringSensitivity = 0.5f;
+
 	UPROPERTY(EditAnywhere)
 	class UWidgetComponent* Menu;
 
 	class UUI_SubMarine* SubMarineMenu;
 
+	UFUNCTION()
+	void OnSteeringStart();
+
+	UFUNCTION()
+	void OnSteeringStop();
+
+	void CalculateSteering();
+
 private:
+	class AVRCharacter* RidingCharacter;
+
+	FVector InitialLeftControllerPosition;
+	FVector InitialRightControllerPosition;
+
+	float EnginePower = 100.f;
+
+	bool bIsSteering;
 	bool bAuto;
 };

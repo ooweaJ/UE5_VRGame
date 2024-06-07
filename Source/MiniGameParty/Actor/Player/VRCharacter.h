@@ -48,14 +48,19 @@ public:
 	void OnLeftIndexCompleted(const FInputActionValue& InputActionValue);
 	void OnRightIndexTriggered(const FInputActionValue& InputActionValue);
 	void OnRightIndexCompleted(const FInputActionValue& InputActionValue);
+
+	void OnATriggered(const FInputActionValue& InputActionValue);
+	void OnBTriggered(const FInputActionValue& InputActionValue);
+
+
 public:
-	FORCEINLINE void OnRiding() { bRiding = true; }
-	FORCEINLINE void OffRiding() { bRiding = false; }
+	void OnRiding(class ASubMarine* RidingPawn);
+	void OffRiding();
 
 protected:
 	void OnMove(const FInputActionValue& InputActionValue);
 
-protected:
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UCameraComponent* VRCamera;
 
@@ -80,5 +85,6 @@ protected:
 	UWidgetInteractionComponent* RightInteraction;
 
 private:
+	class ASubMarine* RidingSubMarine;
 	bool bRiding;
 };

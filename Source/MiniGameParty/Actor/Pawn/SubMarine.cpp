@@ -3,6 +3,10 @@
 #include "Components/WidgetComponent.h"
 #include "Widgets/UI_SubMarine.h"
 #include "Misc/Misc.h"
+#include "Actor/Player/VRCharacter.h"
+
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 ASubMarine::ASubMarine()
 {
@@ -27,6 +31,19 @@ ASubMarine::ASubMarine()
 			SubMarine->SetRelativeRotation(FRotator(0, 140, 0));
 		}
 	}
+	SteeringOffSet = CreateDefaultSubobject<USceneComponent>(TEXT("SteeringOffSet"));
+	SteeringOffSet->SetupAttachment(RootComponent);
+
+	SteeringWheel = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SteeringWheel"));
+	SteeringWheel->SetupAttachment(SteeringOffSet);
+	{
+		ConstructorHelpers::FObjectFinder<UStaticMesh> Asset(TEXT("/Script/Engine.StaticMesh'/Game/Megascans/3D_Assets/Steering_Wheel_wcvodcw/S_Steering_Wheel_wcvodcw_lod3_Var1.S_Steering_Wheel_wcvodcw_lod3_Var1'"));
+		if (Asset.Succeeded())
+		{
+			SteeringWheel->SetStaticMesh(Asset.Object);
+			SteeringWheel->SetRelativeRotation(FRotator(90, 0, 90));
+		}
+	}
 
 	{
 		ConstructorHelpers::FClassFinder<UUserWidget> Class(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/_Dev/UI/UI_SubMarine.UI_SubMarine_C'"));
@@ -47,6 +64,7 @@ ASubMarine::ASubMarine()
 void ASubMarine::BeginPlay()
 {
 	Super::BeginPlay();
+
 	UUI_SubMarine* Widget = Cast<UUI_SubMarine>(Menu->GetUserWidgetObject());
 	if (Widget)
 	{
@@ -65,7 +83,20 @@ void ASubMarine::Tick(float DeltaTime)
 	
 	if (bAuto)
 	{
-		SubMarineMovementComponent->InputVector(GetActorForwardVector());
+		SubMarineMovementComponent->InputVector(GetActorForwardVector() * EnginePower * DeltaTime);
+	}
+
+	if (bIsSteering)
+	{
+		CalculateSteering();
+		AddYaw();
+	}
+	else
+	{
+		FRotator TargetRotation = FRotator(0, 90, 90);
+		FRotator CurrentRotation = SteeringWheel->GetRelativeRotation();
+		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 2.0f);
+		SteeringWheel->SetRelativeRotation(NewRotation);
 	}
 }
 
@@ -91,6 +122,25 @@ void ASubMarine::OnAuto()
 
 void ASubMarine::OnRiding()
 {
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PlayerController)
+	{
+		AVRCharacter* VRCharacter = Cast<AVRCharacter>(PlayerController->GetCharacter());
+		VRCharacter->OnRiding(this);
+		RidingCharacter = VRCharacter;
+	}
+}
+
+void ASubMarine::InputThrottle(float Throttle)
+{
+	FVector InputVector = GetActorForwardVector() * Throttle * EnginePower;
+	SubMarineMovementComponent->InputVector(InputVector);
+}
+
+void ASubMarine::InputUPDown(float Value)
+{
+	FVector InputVector = GetActorUpVector() * Value * EnginePower;
+	SubMarineMovementComponent->InputVector(InputVector);
 }
 
 void ASubMarine::OnGearBtnClicked() { ChangeGear(ESubmarineGear::Gear1); }
@@ -107,6 +157,67 @@ void ASubMarine::ChangeGear(ESubmarineGear InputGear)
 	{
 		SubMarineMovementComponent->UpdateMaxSpeed(InputGear);
 		SubMarineMenu->SelectGear((int32)InputGear);
+	}
+}
+
+void ASubMarine::AddYaw()
+{
+	float YawAngle = SteeringWheel->GetRelativeRotation().Pitch;
+	float AddYaw = YawAngle / -60.f;
+	FRotator AddRotator = FRotator(0, AddYaw, 0);
+	AddActorWorldRotation(AddRotator.Quaternion());
+}
+
+void ASubMarine::OnSteeringStart()
+{
+	bIsSteering = true;
+	InitialLeftControllerPosition = RidingCharacter->MotionControllerLeft->GetComponentLocation();
+	InitialRightControllerPosition = RidingCharacter->MotionControllerRight->GetComponentLocation();
+}
+
+void ASubMarine::OnSteeringStop()
+{
+	bIsSteering = false;
+}
+
+void ASubMarine::CalculateSteering()
+{
+	// 현재 컨트롤러 위치 가져오기
+	FVector CurrentLeftControllerPosition = RidingCharacter->MotionControllerLeft->GetComponentLocation();
+	FVector CurrentRightControllerPosition = RidingCharacter->MotionControllerRight->GetComponentLocation();
+
+	// 컨트롤러의 이동 벡터 계산
+	FVector LeftMovement = CurrentLeftControllerPosition - InitialLeftControllerPosition;
+	FVector RightMovement = CurrentRightControllerPosition - InitialRightControllerPosition;
+
+	// 양손의 이동값을 평균하여 계산
+	float AverageMovementZ = (RightMovement.Z - LeftMovement.Z) / 2.0f;
+	float AverageMovementY = (LeftMovement.Y - RightMovement.Y) / 2.0f;
+
+	float SteeringAmount;
+	if(AverageMovementZ > 0)
+		SteeringAmount = AverageMovementZ + AverageMovementY;
+	else
+		SteeringAmount = AverageMovementZ - AverageMovementY;
+
+	// 평균값을 이용하여 회전값 계산
+	FRotator AverageRotation = FRotator(0,0, SteeringAmount * -SteeringSensitivity);
+
+	// 운전대에 상대적 회전 적용
+	SteeringWheel->AddRelativeRotation(AverageRotation.Quaternion());
+
+	float SteeringWheelPitch = SteeringWheel->GetRelativeRotation().Pitch;
+
+	if (SteeringWheelPitch > 60.f)
+	{
+		FRotator NewRotator = FRotator(60, 90, 90);
+		SteeringWheel->SetRelativeRotation(NewRotator);
+	}
+
+	if (SteeringWheelPitch < -60.f)
+	{
+		FRotator NewRotator = FRotator(-60, 90, 90);
+		SteeringWheel->SetRelativeRotation(NewRotator);
 	}
 }
 

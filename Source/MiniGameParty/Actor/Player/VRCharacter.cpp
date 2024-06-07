@@ -3,6 +3,7 @@
 #include "Misc/NameTable.h"
 #include "Data/Input/BasicInputDataConfig.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Actor/Pawn/SubMarine.h"
 
 AVRCharacter::AVRCharacter()
 {
@@ -109,13 +110,17 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		const UVRHandsInputDataConfig* VRHandsInputDataConfig = GetDefault<UVRHandsInputDataConfig>();
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Started, this, &ThisClass::OnGrabLeftStarted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Completed, this, &ThisClass::OnGrabLeftCompleted);
-
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Started, this, &ThisClass::OnGrabRightStarted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Completed, this, &ThisClass::OnGrabRightCompleted);
+
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Left, ETriggerEvent::Triggered, this, &ThisClass::OnLeftIndexTriggered);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Left, ETriggerEvent::Completed, this, &ThisClass::OnLeftIndexCompleted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Right, ETriggerEvent::Triggered, this, &ThisClass::OnRightIndexTriggered);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Right, ETriggerEvent::Completed, this, &ThisClass::OnRightIndexCompleted);
+
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_A, ETriggerEvent::Triggered, this, &ThisClass::OnATriggered);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_B, ETriggerEvent::Triggered, this, &ThisClass::OnBTriggered);
+
 	}
 	{
 		HandGraphLeft->SetupPlayerInputComponent(MotionControllerLeft, EnhancedInputComponent);
@@ -126,14 +131,16 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AVRCharacter::OnMove(const FInputActionValue& InputActionValue)
 {
+	const FVector2D ActionValue = InputActionValue.Get<FVector2D>();
 	if (bRiding)
 	{
-
+		if (!FMath::IsNearlyZero(ActionValue.Y))
+		{
+			RidingSubMarine->InputUPDown(ActionValue.Y);
+		}
 	}
 	else
 	{
-		const FVector2D ActionValue = InputActionValue.Get<FVector2D>();
-
 		const FRotator CameraRotator = VRCamera->GetRelativeRotation();
 		const FRotator CameraYawRotator = FRotator(0., CameraRotator.Yaw, 0.);
 
@@ -153,12 +160,21 @@ void AVRCharacter::OnMove(const FInputActionValue& InputActionValue)
 
 void AVRCharacter::OnGrabStarted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue)
 {
-	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.f, FColor::Red, TEXT("OnGrabStarted"));
+	if (bRiding)
+	{
+		if(RidingSubMarine != nullptr)
+		RidingSubMarine->OnSteeringStart();
+	}
+
 }
 
 void AVRCharacter::OnGrabCompleted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue)
 {
-	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.f, FColor::Red, TEXT("OnGrabCompleted"));
+	if (bRiding)
+	{
+		if (RidingSubMarine != nullptr)
+		RidingSubMarine->OnSteeringStop();
+	}
 }
 
 void AVRCharacter::OnLeftIndexTriggered(const FInputActionValue& InputActionValue)
@@ -179,4 +195,32 @@ void AVRCharacter::OnRightIndexTriggered(const FInputActionValue& InputActionVal
 void AVRCharacter::OnRightIndexCompleted(const FInputActionValue& InputActionValue)
 {
 	RightInteraction->ReleasePointerKey(EKeys::LeftMouseButton);
+}
+
+void AVRCharacter::OnATriggered(const FInputActionValue& InputActionValue)
+{
+	if (bRiding)
+	{
+		RidingSubMarine->InputThrottle(-(InputActionValue.Get<float>()));
+	}
+}
+
+void AVRCharacter::OnBTriggered(const FInputActionValue& InputActionValue)
+{
+	if (bRiding)
+	{
+		RidingSubMarine->InputThrottle((InputActionValue.Get<float>()));
+	}
+}
+
+void AVRCharacter::OnRiding(ASubMarine* RidingPawn)
+{
+	bRiding = true;
+	RidingSubMarine = RidingPawn;
+}
+
+void AVRCharacter::OffRiding()
+{
+	bRiding = false;
+	RidingSubMarine = nullptr;
 }

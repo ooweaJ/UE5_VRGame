@@ -49,10 +49,13 @@ private:
 private:
     ESubmarineGear CurrentGear;
 
+    float Dragcoefficient = 0.1f; // Res(MaxForce) =  Velocity ^ 2 * coefficient -> coefficient = Res / Speed ^ 2
+
     // SubMarine
     class USphereComponent* Sphere;
     class ASubMarine* OwnerPawn;
-    float MaxSpeedGear[(int32)ESubmarineGear::Max] = { 300, 600, 900 };
+    float MaxSpeedGear[(int32)ESubmarineGear::Max] = { 500, 1000, 1500 };
     float InterpSpeed = 0.1f;
     bool bBlocking;
+    bool bInput;
 };

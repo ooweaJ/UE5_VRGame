@@ -11,6 +11,18 @@ UVRHandsInputDataConfig::UVRHandsInputDataConfig()
 	}
 	{
 		static ConstructorHelpers::FObjectFinder<UInputAction> Asset
+		{ TEXT("/Script/EnhancedInput.InputAction'/Game/_Dev/Player/Input/VRHandInput/IA_Grap_Left.IA_Grap_Left'") };
+		check(Asset.Object);
+		IA_Grab_Left = Asset.Object;
+	}
+	{
+		static ConstructorHelpers::FObjectFinder<UInputAction> Asset
+		{ TEXT("/Script/EnhancedInput.InputAction'/Game/_Dev/Player/Input/VRHandInput/IA_Grap_Right.IA_Grap_Right'") };
+		check(Asset.Object);
+		IA_Grab_Right = Asset.Object;
+	}
+	{
+		static ConstructorHelpers::FObjectFinder<UInputAction> Asset
 		{ TEXT("/Script/EnhancedInput.InputAction'/Game/_Dev/Player/Input/VRHandInput/IA_Index_Left.IA_Index_Left'") };
 		check(Asset.Object);
 		IA_IndexCurl_Left = Asset.Object;
@@ -20,6 +32,18 @@ UVRHandsInputDataConfig::UVRHandsInputDataConfig()
 		{ TEXT("/Script/EnhancedInput.InputAction'/Game/_Dev/Player/Input/VRHandInput/IA_Index_Right.IA_Index_Right'") };
 		check(Asset.Object);
 		IA_IndexCurl_Right = Asset.Object;
+	}
+	{
+		static ConstructorHelpers::FObjectFinder<UInputAction> Asset
+		{ TEXT("/Script/EnhancedInput.InputAction'/Game/_Dev/Player/Input/VRHandInput/IA_A.IA_A'") };
+		check(Asset.Object);
+		IA_A = Asset.Object;
+	}
+	{
+		static ConstructorHelpers::FObjectFinder<UInputAction> Asset
+		{ TEXT("/Script/EnhancedInput.InputAction'/Game/_Dev/Player/Input/VRHandInput/IA_B.IA_B'") };
+		check(Asset.Object);
+		IA_B = Asset.Object;
 	}
 }
 
