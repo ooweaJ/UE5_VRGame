@@ -51,6 +51,8 @@ public:
 
 	void OnATriggered(const FInputActionValue& InputActionValue);
 	void OnBTriggered(const FInputActionValue& InputActionValue);
+	void OnACompleted(const FInputActionValue& InputActionValue);
+	void OnBCompleted(const FInputActionValue& InputActionValue);
 
 
 public:
@@ -59,6 +61,9 @@ public:
 
 protected:
 	void OnMove(const FInputActionValue& InputActionValue);
+	void OffMove(const FInputActionValue& InputActionValue);
+	void OnLook(const FInputActionValue& InputActionValue);
+	void OffLook(const FInputActionValue& InputActionValue);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

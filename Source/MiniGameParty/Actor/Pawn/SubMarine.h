@@ -20,11 +20,15 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 public:
 	void OnAuto();
 	void OnRiding();
 	void InputThrottle(float Throttle);
 	void InputUPDown(float Value);
+	void CalculateSteering(float InputValue);
+	void ZEngineOff();
+	void BulletFire();
 
 	UFUNCTION()
 	void OnGearBtnClicked();
@@ -37,6 +41,12 @@ public:
 	UFUNCTION()
 	void OnAutoBtnClicked();
 
+	UFUNCTION()
+	void OnSteeringStart();
+
+	UFUNCTION()
+	void OnSteeringStop();
+
 private:
 	void ChangeGear(ESubmarineGear InputGear);
 	void AddYaw();
@@ -48,10 +58,13 @@ public:
 	UStaticMeshComponent* SubMarine;
 
 	UPROPERTY(EditAnywhere)
-	USceneComponent* SteeringOffSet;
+	USceneComponent* MuzzleOffSet;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* SteeringWheel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* Muzzle;
 
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* Sphere;
@@ -65,19 +78,18 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UWidgetComponent* Menu;
 
+	UPROPERTY(EditAnywhere)
+	float Mass = 1000;
+
+	UPROPERTY(EditAnywhere)
+	float MaxForce = 10;
+
 	class UUI_SubMarine* SubMarineMenu;
 
-	UFUNCTION()
-	void OnSteeringStart();
-
-	UFUNCTION()
-	void OnSteeringStop();
-
-	void CalculateSteering();
-
+	
 private:
 	class AVRCharacter* RidingCharacter;
-
+	TSubclassOf<class ABullet> BulletClass;
 	FVector InitialLeftControllerPosition;
 	FVector InitialRightControllerPosition;
 

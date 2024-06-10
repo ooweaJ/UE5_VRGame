@@ -7,6 +7,7 @@
 
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Actor/Projectile/Bullet.h"
 
 ASubMarine::ASubMarine()
 {
@@ -31,20 +32,34 @@ ASubMarine::ASubMarine()
 			SubMarine->SetRelativeRotation(FRotator(0, 140, 0));
 		}
 	}
-	SteeringOffSet = CreateDefaultSubobject<USceneComponent>(TEXT("SteeringOffSet"));
-	SteeringOffSet->SetupAttachment(RootComponent);
 
 	SteeringWheel = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SteeringWheel"));
-	SteeringWheel->SetupAttachment(SteeringOffSet);
+	SteeringWheel->SetupAttachment(RootComponent);
 	{
 		ConstructorHelpers::FObjectFinder<UStaticMesh> Asset(TEXT("/Script/Engine.StaticMesh'/Game/Megascans/3D_Assets/Steering_Wheel_wcvodcw/S_Steering_Wheel_wcvodcw_lod3_Var1.S_Steering_Wheel_wcvodcw_lod3_Var1'"));
 		if (Asset.Succeeded())
 		{
 			SteeringWheel->SetStaticMesh(Asset.Object);
-			SteeringWheel->SetRelativeRotation(FRotator(90, 0, 90));
+			SteeringWheel->SetRelativeRotation(FRotator(90, 0, 50));
 		}
 	}
 
+
+	Muzzle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Muzzle"));
+	Muzzle->SetupAttachment(RootComponent);
+	{
+		ConstructorHelpers::FObjectFinder<UStaticMesh> Asset(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cylinder.Cylinder'"));
+		if (Asset.Succeeded())
+		{
+			Muzzle->SetStaticMesh(Asset.Object);
+			Muzzle->SetRelativeRotation(FRotator(-90, 0, 0));
+			Muzzle->SetRelativeLocation(FVector(300, 0, -140));
+			Muzzle->SetRelativeScale3D(FVector(0.3, 0.3, 1.75));
+		}
+	}
+	MuzzleOffSet = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleOffSet"));
+	MuzzleOffSet->SetupAttachment(Muzzle);
+	MuzzleOffSet->SetRelativeLocation(FVector(0, 0, 51));
 	{
 		ConstructorHelpers::FClassFinder<UUserWidget> Class(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/_Dev/UI/UI_SubMarine.UI_SubMarine_C'"));
 		if (!Class.Succeeded()) return;
@@ -52,12 +67,18 @@ ASubMarine::ASubMarine()
 		Menu = CreateDefaultSubobject<UWidgetComponent>(TEXT("Menu"));
 		Menu->SetupAttachment(RootComponent);
 		FTransform Transform;
-		Transform.SetLocation(FVector(77., -150., -122.));
-		Transform.SetRotation(FRotator(20.0, 110.0, 0.0).Quaternion());
+		Transform.SetLocation(FVector(145, -88, -122));
+		Transform.SetRotation(FRotator(0, 29.5, 148.5).Quaternion());
 		Transform.SetScale3D(FVector(0.5, 0.5, 0.5));
 		Menu->SetRelativeTransform(Transform);
 		Menu->SetWidgetClass(Class.Class);
 		Menu->SetDrawSize(FVector2D(190, 205));
+	}
+
+	{
+		ConstructorHelpers::FClassFinder<ABullet> Class(TEXT("/Script/Engine.Blueprint'/Game/_Dev/Player/NewBlueprint2.NewBlueprint2_C'"));
+		if (Class.Succeeded())
+			BulletClass = Class.Class;
 	}
 }
 
@@ -88,7 +109,6 @@ void ASubMarine::Tick(float DeltaTime)
 
 	if (bIsSteering)
 	{
-		CalculateSteering();
 		AddYaw();
 	}
 	else
@@ -97,6 +117,7 @@ void ASubMarine::Tick(float DeltaTime)
 		FRotator CurrentRotation = SteeringWheel->GetRelativeRotation();
 		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 2.0f);
 		SteeringWheel->SetRelativeRotation(NewRotation);
+		AddYaw();
 	}
 }
 
@@ -133,13 +154,14 @@ void ASubMarine::OnRiding()
 
 void ASubMarine::InputThrottle(float Throttle)
 {
-	FVector InputVector = GetActorForwardVector() * Throttle * EnginePower;
+	FVector InputVector = GetActorForwardVector() * Throttle;
 	SubMarineMovementComponent->InputVector(InputVector);
+	SubMarineMovementComponent->SetThrottle(Throttle);
 }
 
-void ASubMarine::InputUPDown(float Value)
+void ASubMarine::InputUPDown(float Throttle)
 {
-	FVector InputVector = GetActorUpVector() * Value * EnginePower;
+	FVector InputVector = GetActorUpVector() * Throttle;
 	SubMarineMovementComponent->InputVector(InputVector);
 }
 
@@ -180,28 +202,10 @@ void ASubMarine::OnSteeringStop()
 	bIsSteering = false;
 }
 
-void ASubMarine::CalculateSteering()
+void ASubMarine::CalculateSteering(float InputValue)
 {
-	// 현재 컨트롤러 위치 가져오기
-	FVector CurrentLeftControllerPosition = RidingCharacter->MotionControllerLeft->GetComponentLocation();
-	FVector CurrentRightControllerPosition = RidingCharacter->MotionControllerRight->GetComponentLocation();
-
-	// 컨트롤러의 이동 벡터 계산
-	FVector LeftMovement = CurrentLeftControllerPosition - InitialLeftControllerPosition;
-	FVector RightMovement = CurrentRightControllerPosition - InitialRightControllerPosition;
-
-	// 양손의 이동값을 평균하여 계산
-	float AverageMovementZ = (RightMovement.Z - LeftMovement.Z) / 2.0f;
-	float AverageMovementY = (LeftMovement.Y - RightMovement.Y) / 2.0f;
-
-	float SteeringAmount;
-	if(AverageMovementZ > 0)
-		SteeringAmount = AverageMovementZ + AverageMovementY;
-	else
-		SteeringAmount = AverageMovementZ - AverageMovementY;
-
-	// 평균값을 이용하여 회전값 계산
-	FRotator AverageRotation = FRotator(0,0, SteeringAmount * -SteeringSensitivity);
+	// 회전 값을 적용
+	FRotator AverageRotation = FRotator(0, 0, InputValue);
 
 	// 운전대에 상대적 회전 적용
 	SteeringWheel->AddRelativeRotation(AverageRotation.Quaternion());
@@ -219,5 +223,18 @@ void ASubMarine::CalculateSteering()
 		FRotator NewRotator = FRotator(-60, 90, 90);
 		SteeringWheel->SetRelativeRotation(NewRotator);
 	}
+}
+
+void ASubMarine::ZEngineOff()
+{
+	SubMarineMovementComponent->Velocity.Z = 0.f;
+}
+
+void ASubMarine::BulletFire()
+{
+	FTransform DefaultTransform;
+	ABullet* SpawnedActor = GetWorld()->SpawnActorDeferred<ABullet>(BulletClass, DefaultTransform, this, this, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	DefaultTransform.SetLocation(MuzzleOffSet->GetComponentLocation());
+	SpawnedActor->FinishSpawning(DefaultTransform, true);
 }
 

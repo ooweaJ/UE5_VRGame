@@ -23,11 +23,12 @@ void USubMarineMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
     
-    FVector DragForce = -Velocity.GetSafeNormal() * Velocity.SizeSquared() * Dragcoefficient;
+    if(Throttle == 0.f)
+    {
+        FVector NewVelocity = FMath::VInterpTo(Velocity, FVector::ZeroVector, DeltaTime, 1.f);
+        Velocity = NewVelocity;
+    }
 
-    FVector NewVelocity = Velocity + DragForce * DeltaTime;
-
-    Velocity = NewVelocity;
     CollisionDetection(DeltaTime);
 }
 
@@ -124,7 +125,7 @@ void USubMarineMovementComponent::UpdateMaxSpeed(ESubmarineGear InputGear)
 void USubMarineMovementComponent::InputVector(FVector Input)
 {
     if (bBlocking) return;
-    Velocity += Input;
+    Velocity += Input * OwnerPawn->MaxForce * (MaxSpeed/500.f);
     
     float CurrentSpeed = Velocity.Size();
 

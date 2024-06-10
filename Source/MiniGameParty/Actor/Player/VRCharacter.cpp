@@ -105,12 +105,15 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	{
 		const UBasicInputDataConfig* BasicInputDataConfig = GetDefault<UBasicInputDataConfig>();
 		EnhancedInputComponent->BindAction(BasicInputDataConfig->Move, ETriggerEvent::Triggered, this, &ThisClass::OnMove);
+		EnhancedInputComponent->BindAction(BasicInputDataConfig->Move, ETriggerEvent::Completed, this, &ThisClass::OffMove);
+		EnhancedInputComponent->BindAction(BasicInputDataConfig->Look, ETriggerEvent::Triggered, this, &ThisClass::OnLook);
+		EnhancedInputComponent->BindAction(BasicInputDataConfig->Look, ETriggerEvent::Completed, this, &ThisClass::OffLook);
 	}
 	{
 		const UVRHandsInputDataConfig* VRHandsInputDataConfig = GetDefault<UVRHandsInputDataConfig>();
-		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Started, this, &ThisClass::OnGrabLeftStarted);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Triggered, this, &ThisClass::OnGrabLeftStarted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Completed, this, &ThisClass::OnGrabLeftCompleted);
-		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Started, this, &ThisClass::OnGrabRightStarted);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Triggered, this, &ThisClass::OnGrabRightStarted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Completed, this, &ThisClass::OnGrabRightCompleted);
 
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Left, ETriggerEvent::Triggered, this, &ThisClass::OnLeftIndexTriggered);
@@ -119,7 +122,9 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Right, ETriggerEvent::Completed, this, &ThisClass::OnRightIndexCompleted);
 
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_A, ETriggerEvent::Triggered, this, &ThisClass::OnATriggered);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_A, ETriggerEvent::Completed, this, &ThisClass::OnACompleted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_B, ETriggerEvent::Triggered, this, &ThisClass::OnBTriggered);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_B, ETriggerEvent::Completed, this, &ThisClass::OnBCompleted);
 
 	}
 	{
@@ -131,12 +136,14 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AVRCharacter::OnMove(const FInputActionValue& InputActionValue)
 {
+
 	const FVector2D ActionValue = InputActionValue.Get<FVector2D>();
 	if (bRiding)
 	{
-		if (!FMath::IsNearlyZero(ActionValue.Y))
+		if (!FMath::IsNearlyZero(ActionValue.X))
 		{
-			RidingSubMarine->InputUPDown(ActionValue.Y);
+			RidingSubMarine->CalculateSteering(ActionValue.X);
+			RidingSubMarine->OnSteeringStart();
 		}
 	}
 	else
@@ -158,27 +165,56 @@ void AVRCharacter::OnMove(const FInputActionValue& InputActionValue)
 	}
 }
 
-void AVRCharacter::OnGrabStarted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue)
+void AVRCharacter::OffMove(const FInputActionValue& InputActionValue)
 {
 	if (bRiding)
 	{
-		if(RidingSubMarine != nullptr)
-		RidingSubMarine->OnSteeringStart();
+		RidingSubMarine->OnSteeringStop();
 	}
+}
 
+void AVRCharacter::OnLook(const FInputActionValue& InputActionValue)
+{
+
+}
+
+void AVRCharacter::OffLook(const FInputActionValue& InputActionValue)
+{
+
+}
+
+void AVRCharacter::OnGrabStarted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue)
+{
+	if (MotionControllerComponent == MotionControllerLeft)
+	{
+		if (bRiding)
+		{
+			RidingSubMarine->InputUPDown(-(InputActionValue.Get<float>()));
+		}
+	}
+	else
+	{
+		if (bRiding)
+		{
+			RidingSubMarine->InputUPDown(InputActionValue.Get<float>());
+		}
+	}
 }
 
 void AVRCharacter::OnGrabCompleted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue)
 {
 	if (bRiding)
 	{
-		if (RidingSubMarine != nullptr)
-		RidingSubMarine->OnSteeringStop();
+		RidingSubMarine->ZEngineOff();
 	}
 }
 
 void AVRCharacter::OnLeftIndexTriggered(const FInputActionValue& InputActionValue)
 {
+	if (bRiding)
+	{
+		RidingSubMarine->BulletFire();
+	}
 	LeftInteraction->PressPointerKey(EKeys::LeftMouseButton);
 }
 
@@ -210,6 +246,22 @@ void AVRCharacter::OnBTriggered(const FInputActionValue& InputActionValue)
 	if (bRiding)
 	{
 		RidingSubMarine->InputThrottle((InputActionValue.Get<float>()));
+	}
+}
+
+void AVRCharacter::OnACompleted(const FInputActionValue& InputActionValue)
+{
+	if (bRiding)
+	{
+		RidingSubMarine->InputThrottle(0.f);
+	}
+}
+
+void AVRCharacter::OnBCompleted(const FInputActionValue& InputActionValue)
+{
+	if (bRiding)
+	{
+		RidingSubMarine->InputThrottle(0.f);
 	}
 }
 

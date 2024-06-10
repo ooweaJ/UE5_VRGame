@@ -37,7 +37,7 @@ public:
     void SetPawnOwner(class ASubMarine* Pawn);
     void UpdateMaxSpeed(ESubmarineGear InputGear);
     void InputVector(FVector Input);
-
+    void SetThrottle(float InputThrottle) { Throttle = InputThrottle; }
 private:
     UFUNCTION()
     void OffBlockingDelay();
@@ -49,8 +49,6 @@ private:
 private:
     ESubmarineGear CurrentGear;
 
-    float Dragcoefficient = 0.1f; // Res(MaxForce) =  Velocity ^ 2 * coefficient -> coefficient = Res / Speed ^ 2
-
     // SubMarine
     class USphereComponent* Sphere;
     class ASubMarine* OwnerPawn;
@@ -58,4 +56,6 @@ private:
     float InterpSpeed = 0.1f;
     bool bBlocking;
     bool bInput;
+
+    float Throttle;
 };

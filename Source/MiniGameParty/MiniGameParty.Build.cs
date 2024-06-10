@@ -14,6 +14,7 @@ public class MiniGameParty : ModuleRules
             "MoviePlayer",
             "EnhancedInput",
             "XRBase", "HeadMountedDisplay",
+			"Niagara"
         });
 
         if (Target.Type == TargetType.Editor)
