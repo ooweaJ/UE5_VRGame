@@ -7,6 +7,7 @@
 
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Actor/Projectile/Bullet.h"
 
 ASubMarine::ASubMarine()
@@ -76,7 +77,7 @@ ASubMarine::ASubMarine()
 	}
 
 	{
-		ConstructorHelpers::FClassFinder<ABullet> Class(TEXT("/Script/Engine.Blueprint'/Game/_Dev/Player/NewBlueprint2.NewBlueprint2_C'"));
+		ConstructorHelpers::FClassFinder<ABullet> Class(TEXT("/Script/Engine.Blueprint'/Game/_Dev/Player/Bullet.Bullet_C'"));
 		if (Class.Succeeded())
 			BulletClass = Class.Class;
 	}
@@ -202,6 +203,11 @@ void ASubMarine::OnSteeringStop()
 	bIsSteering = false;
 }
 
+void ASubMarine::OnFire()
+{
+	bFire = false;
+}
+
 void ASubMarine::CalculateSteering(float InputValue)
 {
 	// 회전 값을 적용
@@ -232,9 +238,13 @@ void ASubMarine::ZEngineOff()
 
 void ASubMarine::BulletFire()
 {
+	if (bFire) return;
+	bFire = true;
 	FTransform DefaultTransform;
-	ABullet* SpawnedActor = GetWorld()->SpawnActorDeferred<ABullet>(BulletClass, DefaultTransform, this, this, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	DefaultTransform.SetLocation(MuzzleOffSet->GetComponentLocation());
+	ABullet* SpawnedActor = GetWorld()->SpawnActorDeferred<ABullet>(BulletClass, DefaultTransform, this, this, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	SpawnedActor->SetVelocity(GetActorForwardVector());
 	SpawnedActor->FinishSpawning(DefaultTransform, true);
+	UKismetSystemLibrary::K2_SetTimer(this, "OnFire", FireRate, false);
 }
 

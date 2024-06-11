@@ -47,6 +47,8 @@ public:
 	UFUNCTION()
 	void OnSteeringStop();
 
+	UFUNCTION()
+	void OnFire();
 private:
 	void ChangeGear(ESubmarineGear InputGear);
 	void AddYaw();
@@ -84,9 +86,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	float MaxForce = 10;
 
-	class UUI_SubMarine* SubMarineMenu;
+	UPROPERTY(EditAnywhere)
+	float FireRate = 0.5f;
 
-	
+	class UUI_SubMarine* SubMarineMenu;
 private:
 	class AVRCharacter* RidingCharacter;
 	TSubclassOf<class ABullet> BulletClass;
@@ -97,4 +100,5 @@ private:
 
 	bool bIsSteering;
 	bool bAuto;
+	bool bFire;
 };

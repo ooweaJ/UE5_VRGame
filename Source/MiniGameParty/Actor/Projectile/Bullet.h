@@ -17,6 +17,10 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+	void SetVelocity(FVector InputVelocity);
+
+	UFUNCTION()
+	void OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -32,8 +36,6 @@ private:
 	UPROPERTY(VisibleDefaultsOnly)
 	class UProjectileMovementComponent* Projectile;
 
-	UPROPERTY(VisibleDefaultsOnly)
-	class USceneComponent* Scene;
 private:
 	UPROPERTY(EditAnywhere)
 	float ProjectileSpeed = 1500.f;

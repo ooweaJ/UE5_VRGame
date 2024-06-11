@@ -175,7 +175,9 @@ void AVRCharacter::OffMove(const FInputActionValue& InputActionValue)
 
 void AVRCharacter::OnLook(const FInputActionValue& InputActionValue)
 {
-
+	const FVector ActionValue = InputActionValue.Get<FVector>();
+	AddControllerYawInput(ActionValue.X);
+	AddControllerPitchInput(ActionValue.Y);
 }
 
 void AVRCharacter::OffLook(const FInputActionValue& InputActionValue)

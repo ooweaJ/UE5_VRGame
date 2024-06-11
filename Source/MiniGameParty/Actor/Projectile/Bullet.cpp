@@ -3,38 +3,52 @@
 #include "NiagaraComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 ABullet::ABullet()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	{
-		Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
-		SetRootComponent(Scene);
+		SetRootComponent(Sphere);
 		Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 		ThrowParticle = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Throw"));
 		Projectile = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile"));
 	}
 
-	Sphere->SetupAttachment(Scene);
 	ThrowParticle->SetupAttachment(Sphere);
 
-	Projectile->InitialSpeed = 3000.f;
-	Projectile->MaxSpeed = 3000.f;
+	Projectile->InitialSpeed = 1000.f;
+	Projectile->MaxSpeed = 1000.f;
 	Projectile->ProjectileGravityScale = 0.f;
-	Projectile->bSweepCollision = true;
+	InitialLifeSpan = 10.f;
 }
 
 void ABullet::BeginPlay()
 {
 	Super::BeginPlay();
-
-	InitialLifeSpan = 10.f;
+	Sphere->OnComponentHit.AddDynamic(this, &ThisClass::OnComponentHit);
 }
 
 void ABullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABullet::SetVelocity(FVector InputVelocity)
+{
+	Projectile->Velocity = InputVelocity;
+}
+
+void ABullet::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (!!ImpactParticle)
+	{
+		FVector location = Hit.Location;
+		FRotator Rotation = Projectile->Velocity.GetSafeNormal().Rotation();
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticle, location, Rotation);
+		Destroy();
+	}
 }
 
