@@ -34,6 +34,19 @@ public:
 	UFUNCTION()
 	void TimelineHandle();
 	
+	UFUNCTION()
+	void OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
+	void Targetbutt();
+
+	FORCEINLINE bool IsStrafe() { return bStrafe; }
+	FORCEINLINE bool IsAttack() { return bAttack; }
+
+	void EndAttack();
+	void TargetStrafe(float DeltaTime);
+	void OnStrafe();
+	void Return(float DeltaTime);
 public:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Head;
@@ -41,7 +54,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Body;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	UFloatingPawnMovement* FloatingPawnMovement;
 
 	class UCurveFloat* Curve;
@@ -51,15 +64,25 @@ public:
 	FOnTimelineEvent TimelineFinished;
 
 	bool bFlipFlop = true;
+	bool bAttack;
+	bool bStrafe;
+	
+	AActor* CenterActor; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	AActor* CenterActor;  // 상어가 중심으로 삼을 Actor
+	float CircleRadius = 600.0f; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float CircleRadius = 600.0f;  // 원의 반지름
+	float RotationSpeed = 50.0f; 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float RotationSpeed = 50.0f;  // 회전 속도 (도/초)
+	float CurrentAngle;
 
-	float CurrentAngle;  // 현재 각도
+	TSubclassOf<UCameraShakeBase> CameraShake;
+	FVector TargetDirection;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	class UNiagaraSystem* ImpactParticle;
+	FVector InitialLocation;
+	FVector ReturnLocation;
 };

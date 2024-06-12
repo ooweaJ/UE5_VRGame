@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Actor/Projectile/Bullet.h"
+#include "Engine.h"
 
 ASubMarine::ASubMarine()
 {
@@ -97,6 +98,14 @@ void ASubMarine::BeginPlay()
 		SubMarineMenu->Riding->OnClicked.AddDynamic(this, &ThisClass::OnRidingBtnClicked);
 		SubMarineMenu->Auto->OnClicked.AddDynamic(this, &ThisClass::OnAutoBtnClicked);
 	}
+}
+
+float ASubMarine::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	GEngine->AddOnScreenDebugMessage(0, 3.f, FColor::Red, FString::SanitizeFloat(DamageAmount));
+
+	return 0.0f;
 }
 
 void ASubMarine::Tick(float DeltaTime)

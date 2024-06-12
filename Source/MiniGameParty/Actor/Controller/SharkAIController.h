@@ -15,6 +15,8 @@ public:
 	ASharkAIController();
 
 	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
+	AActor* GetTarget();
+	void SetAttack(bool Attack);
 protected:
 
 	virtual void OnPossess(APawn* InPawn) override;
@@ -28,4 +30,12 @@ private:
 	class UAISenseConfig_Sight* Sight;
 
 	class AShark* OwnerPawn;
+
+
+private:
+	UPROPERTY()
+	class UBehaviorTree* BTAsset;
+
+	UPROPERTY()
+	class UBlackboardData* BBAsset;
 };

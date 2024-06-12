@@ -1,4 +1,7 @@
 #include "Actor/Controller/SharkAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardData.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Actor/Pawn/SubMarine.h"
@@ -6,12 +9,13 @@
 
 ASharkAIController::ASharkAIController()
 {
+	Blackboard = CreateDefaultSubobject<UBlackboardComponent>("BlackBoard");
 	Perception = CreateDefaultSubobject<UAIPerceptionComponent>("Perception");
 
 	Sight = CreateDefaultSubobject<UAISenseConfig_Sight>("Sight");
-	Sight->SightRadius = 5000.f;
-	Sight->LoseSightRadius = 5000.f;
-	Sight->PeripheralVisionAngleDegrees = 180.0f;
+	Sight->SightRadius = 3000.f;
+	Sight->LoseSightRadius = 3000.f;
+	Sight->PeripheralVisionAngleDegrees = 360.0f;
 	Sight->SetMaxAge(2.f);
 
 	Sight->DetectionByAffiliation.bDetectEnemies = true;
@@ -21,6 +25,17 @@ ASharkAIController::ASharkAIController()
 	Perception->ConfigureSense(*Sight);
 	Perception->SetDominantSense(Sight->GetSenseImplementation());
 	SetGenericTeamId(FGenericTeamId(1));
+
+	static ConstructorHelpers::FObjectFinder<UBlackboardData> BBObject(TEXT("/Script/AIModule.BlackboardData'/Game/_Dev/BB_Shark.BB_Shark'"));
+	if (BBObject.Succeeded())
+	{
+		BBAsset = BBObject.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTObject(TEXT("/Script/AIModule.BehaviorTree'/Game/_Dev/BT_Shark.BT_Shark'"));
+	if (BTObject.Succeeded())
+	{
+		BTAsset = BTObject.Object;
+	}
 }
 
 ETeamAttitude::Type ASharkAIController::GetTeamAttitudeTowards(const AActor& Other) const
@@ -44,12 +59,26 @@ ETeamAttitude::Type ASharkAIController::GetTeamAttitudeTowards(const AActor& Oth
 	return ETeamAttitude::Neutral;
 }
 
+AActor* ASharkAIController::GetTarget()
+{
+	AActor* Target = Cast<AActor>(Blackboard->GetValueAsObject("Target"));
+	return Target;
+}
+
+void ASharkAIController::SetAttack(bool Attack)
+{
+	Blackboard->SetValueAsBool("Attack", Attack);
+}
+
 void ASharkAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
 	OwnerPawn = Cast<AShark>(InPawn);
+	UBlackboardComponent* BlackboardPtr = Blackboard;
+	UseBlackboard(BBAsset, BlackboardPtr);
 	Perception->OnPerceptionUpdated.AddDynamic(this, &ThisClass::OnPerceptionUpdated);
+	RunBehaviorTree(BTAsset);
 }
 
 void ASharkAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
@@ -67,5 +96,6 @@ void ASharkAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActor
 			break;
 	}
 
+	Blackboard->SetValueAsObject("Target", SubMarine);
 	OwnerPawn->CenterActor = SubMarine;
 }

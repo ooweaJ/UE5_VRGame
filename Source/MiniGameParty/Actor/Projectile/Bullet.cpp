@@ -4,6 +4,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Actor/Pawn/Enemy/Shark.h"
+#include "Engine/DamageEvents.h"
 
 ABullet::ABullet()
 {
@@ -48,7 +50,14 @@ void ABullet::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherAct
 		FVector location = Hit.Location;
 		FRotator Rotation = Projectile->Velocity.GetSafeNormal().Rotation();
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticle, location, Rotation);
-		Destroy();
 	}
+	AShark*Shark = Cast<AShark>(OtherActor);
+	if (Shark)
+	{
+		FDamageEvent de;
+		Shark->TakeDamage(1.f, de, GetOwner()->GetInstigatorController(), GetOwner());
+	}
+
+	Destroy();
 }
 
