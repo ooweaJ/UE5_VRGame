@@ -10,6 +10,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Actor/Projectile/Bullet.h"
 #include "Engine.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 ASubMarine::ASubMarine()
 {
@@ -98,13 +99,27 @@ void ASubMarine::BeginPlay()
 		SubMarineMenu->Riding->OnClicked.AddDynamic(this, &ThisClass::OnRidingBtnClicked);
 		SubMarineMenu->Auto->OnClicked.AddDynamic(this, &ThisClass::OnAutoBtnClicked);
 	}
+
+	if (SubMarine && SubMarine->GetStaticMesh())
+	{
+		UMaterialInterface* Material = SubMarine->GetMaterial(1);
+		if (Material)
+		{
+			DynamicMaterialInstance = UMaterialInstanceDynamic::Create(Material, this);
+			if (DynamicMaterialInstance)
+			{
+				SubMarine->SetMaterial(1, DynamicMaterialInstance);
+			}
+		}
+	}
 }
 
 float ASubMarine::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(0, 3.f, FColor::Red, FString::SanitizeFloat(DamageAmount));
-
+	Window += FVector(0.25, 0.25, 0.25);
+	Hit(Window);
 	return 0.0f;
 }
 
@@ -198,6 +213,14 @@ void ASubMarine::AddYaw()
 	float AddYaw = YawAngle / -60.f;
 	FRotator AddRotator = FRotator(0, AddYaw, 0);
 	AddActorWorldRotation(AddRotator.Quaternion());
+}
+
+void ASubMarine::Hit(FVector InVector)
+{
+	if (DynamicMaterialInstance)
+	{
+		DynamicMaterialInstance->SetVectorParameterValue("Window", InVector);
+	}
 }
 
 void ASubMarine::OnSteeringStart()

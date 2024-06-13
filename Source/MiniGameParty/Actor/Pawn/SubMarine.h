@@ -53,6 +53,7 @@ public:
 private:
 	void ChangeGear(ESubmarineGear InputGear);
 	void AddYaw();
+	void Hit(FVector InVector);
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	USubMarineMovementComponent* SubMarineMovementComponent;
@@ -96,9 +97,10 @@ private:
 	TSubclassOf<class ABullet> BulletClass;
 	FVector InitialLeftControllerPosition;
 	FVector InitialRightControllerPosition;
+	FVector Window;
+	UMaterialInstanceDynamic* DynamicMaterialInstance;
 
 	float EnginePower = 100.f;
-
 	bool bIsSteering;
 	bool bAuto;
 	bool bFire;

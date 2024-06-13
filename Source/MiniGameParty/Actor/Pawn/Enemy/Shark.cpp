@@ -175,6 +175,16 @@ void AShark::Targetbutt()
 
 void AShark::OnStrafe()
 {
+	// 현재 위치 가져오기
+	FVector CurrentLocation = GetActorLocation();
+	FVector CenterLocation = CenterActor->GetActorLocation();
+
+	// 중심 위치로부터 현재 위치의 각도 계산
+	FVector Direction = CurrentLocation - CenterLocation;
+	float InitialAngle = FMath::Atan2(Direction.Y, Direction.X);
+
+	// 현재 각도 업데이트
+	CurrentAngle = FMath::RadiansToDegrees(InitialAngle);
 	bStrafe = true;
 	int32 RandomTime = FMath::RandRange(1, 5);
 	UKismetSystemLibrary::K2_SetTimer(this, "Targetbutt", RandomTime, false);
