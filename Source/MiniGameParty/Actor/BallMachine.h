@@ -18,6 +18,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	void SpawnBall();
 private:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* Scene;
@@ -27,4 +28,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	USceneComponent* SpawnPoint;
+
+	TSubclassOf<class ABall> BallClass;
+	FTimerHandle SpawnTimerHandle;
 };

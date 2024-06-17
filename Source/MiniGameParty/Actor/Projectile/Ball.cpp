@@ -31,8 +31,10 @@ void ABall::BeginPlay()
 void ABall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	Ball->AddRelativeRotation(RollDirection.Quaternion());
+	if (!bHitted)
+	{
+		Ball->AddRelativeRotation(RollDirection.Quaternion());
+	}
 }
 
 void ABall::HitBat(FVector AddForce)
@@ -40,5 +42,6 @@ void ABall::HitBat(FVector AddForce)
 	Sphere->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	Sphere->SetSimulatePhysics(true);
 	Sphere->AddImpulse(AddForce);
+	bHitted = true;
 }
 

@@ -31,11 +31,7 @@ private:
 
 	FVector Force;
 private:
-	TArray<FVector> PreviousPositions;
-	TArray<FVector> PreviousVelocities;
-	int32 NumSamples;
-	float Mass;
 
-	FVector CalculateAverage(const TArray<FVector>& Vectors);
-	void CalculateForce(const FVector& AverageAcceleration);
+	FVector PreviousLocation;
+	FVector CurrentVelocity;
 };

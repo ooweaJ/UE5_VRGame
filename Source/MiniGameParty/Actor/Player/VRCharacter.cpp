@@ -3,7 +3,9 @@
 #include "Misc/NameTable.h"
 #include "Data/Input/BasicInputDataConfig.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Actor/Pawn/SubMarine.h"
+#include "Components/GrabComponent.h"
 
 AVRCharacter::AVRCharacter()
 {
@@ -111,9 +113,11 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 	{
 		const UVRHandsInputDataConfig* VRHandsInputDataConfig = GetDefault<UVRHandsInputDataConfig>();
-		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Triggered, this, &ThisClass::OnGrabLeftStarted);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Triggered, this, &ThisClass::OnGrabLeftTriggered);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Started, this, &ThisClass::OnGrabLeftStarted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Left, ETriggerEvent::Completed, this, &ThisClass::OnGrabLeftCompleted);
-		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Triggered, this, &ThisClass::OnGrabRightStarted);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Triggered, this, &ThisClass::OnGrabRightTriggered);
+		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Started, this, &ThisClass::OnGrabRightStarted);
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_Grab_Right, ETriggerEvent::Completed, this, &ThisClass::OnGrabRightCompleted);
 
 		EnhancedInputComponent->BindAction(VRHandsInputDataConfig->IA_IndexCurl_Left, ETriggerEvent::Triggered, this, &ThisClass::OnLeftIndexTriggered);
@@ -138,6 +142,7 @@ void AVRCharacter::OnMove(const FInputActionValue& InputActionValue)
 {
 
 	const FVector2D ActionValue = InputActionValue.Get<FVector2D>();
+
 	if (bRiding)
 	{
 		if (!FMath::IsNearlyZero(ActionValue.X))
@@ -185,21 +190,71 @@ void AVRCharacter::OffLook(const FInputActionValue& InputActionValue)
 
 }
 
+void AVRCharacter::Grab(UMotionControllerComponent* InController)
+{
+	FVector Start = InController->GetComponentLocation();
+	FVector End = Start;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_PhysicsBody));
+	TArray<FHitResult> OutHits;
+
+	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
+		GetWorld(),
+		Start,
+		End,
+		30.f,
+		ObjectTypes,
+		false,
+		TArray<AActor*>(),  
+		EDrawDebugTrace::ForDuration,  
+		OutHits,
+		true, 
+		FLinearColor::Red,
+		FLinearColor::Green,
+		1.0f  
+	);
+
+	
+	if (bHit)
+	{
+		for (const FHitResult& Hit : OutHits)
+		{
+			if (UGrabComponent* GrabComponent = Hit.GetActor()->GetComponentByClass<UGrabComponent>())
+			{
+				Hit.GetActor()->AttachToComponent(InController, FAttachmentTransformRules::KeepWorldTransform);
+			}
+		}
+	}
+}
+
 void AVRCharacter::OnGrabStarted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue)
 {
-	if (MotionControllerComponent == MotionControllerLeft)
+	if (bRiding)
 	{
-		if (bRiding)
+
+	}
+	else
+	{
+		Grab(MotionControllerComponent);
+	}
+}
+
+void AVRCharacter::OnGrabTriggered(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue)
+{
+	if (bRiding)
+	{
+		if (MotionControllerComponent == MotionControllerLeft)
 		{
 			RidingSubMarine->InputUPDown(-(InputActionValue.Get<float>()));
+		}
+		else
+		{
+			RidingSubMarine->InputUPDown(InputActionValue.Get<float>());
 		}
 	}
 	else
 	{
-		if (bRiding)
-		{
-			RidingSubMarine->InputUPDown(InputActionValue.Get<float>());
-		}
+		
 	}
 }
 

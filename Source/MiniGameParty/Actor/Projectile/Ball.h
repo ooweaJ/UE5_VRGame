@@ -35,4 +35,6 @@ private:
 	float ProjectileSpeed = 1500.f;
 
 	FRotator RollDirection;
+
+	bool bHitted;
 };

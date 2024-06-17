@@ -40,6 +40,11 @@ public:
 	void OnGrabRightStarted(const FInputActionValue& InputActionValue) { OnGrabStarted(MotionControllerRight, InputActionValue); }
 	void OnGrabStarted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue);
 
+
+	void OnGrabLeftTriggered(const FInputActionValue& InputActionValue) { OnGrabTriggered(MotionControllerLeft, InputActionValue); }
+	void OnGrabRightTriggered(const FInputActionValue& InputActionValue) { OnGrabTriggered(MotionControllerRight, InputActionValue); }
+	void OnGrabTriggered(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue);
+
 	void OnGrabLeftCompleted(const FInputActionValue& InputActionValue) { OnGrabCompleted(MotionControllerLeft, InputActionValue); }
 	void OnGrabRightCompleted(const FInputActionValue& InputActionValue) { OnGrabCompleted(MotionControllerRight, InputActionValue); }
 	void OnGrabCompleted(UMotionControllerComponent* MotionControllerComponent, const FInputActionValue& InputActionValue);
@@ -65,6 +70,8 @@ protected:
 	void OnLook(const FInputActionValue& InputActionValue);
 	void OffLook(const FInputActionValue& InputActionValue);
 
+	UFUNCTION(BlueprintCallable)
+	void Grab(UMotionControllerComponent* InController);
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UCameraComponent* VRCamera;
