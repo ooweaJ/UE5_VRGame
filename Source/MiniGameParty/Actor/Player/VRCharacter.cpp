@@ -7,6 +7,7 @@
 #include "Actor/Pawn/SubMarine.h"
 #include "Components/GrabComponent.h"
 
+
 AVRCharacter::AVRCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -56,15 +57,11 @@ AVRCharacter::AVRCharacter()
 		LeftHand->SetAnimClass(AnimClass.Class);
 	}
 
-	LeftInteraction = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("LeftInteraction"));
 	RightInteraction = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("RightInteraction"));
 
-	LeftInteraction->SetupAttachment(MotionControllerLeft);
 	RightInteraction->SetupAttachment(MotionControllerRight);
 
-	LeftInteraction->bShowDebug = true;
-	LeftInteraction->TraceChannel = FCollisionChannel::WorldUI;
-	RightInteraction->bShowDebug = true;
+	RightInteraction->bShowDebug = false;
 	RightInteraction->TraceChannel = FCollisionChannel::WorldUI;
 }
 
@@ -153,19 +150,31 @@ void AVRCharacter::OnMove(const FInputActionValue& InputActionValue)
 	}
 	else
 	{
-		const FRotator CameraRotator = VRCamera->GetRelativeRotation();
-		const FRotator CameraYawRotator = FRotator(0., CameraRotator.Yaw, 0.);
+		//const FRotator CameraRotator = VRCamera->GetRelativeRotation();
+		//const FRotator CameraYawRotator = FRotator(0., CameraRotator.Yaw, 0.);
 
+		//if (!FMath::IsNearlyZero(ActionValue.Y))
+		//{
+		//	const FVector ForwardVector = UKismetMathLibrary::GetForwardVector(CameraYawRotator);
+		//	AddMovementInput(ForwardVector, ActionValue.Y);
+		//}
+
+		//if (!FMath::IsNearlyZero(ActionValue.X))
+		//{
+		//	const FVector RightVector = UKismetMathLibrary::GetRightVector(CameraYawRotator);
+		//	AddMovementInput(RightVector, ActionValue.X);
+		//}
+		
 		if (!FMath::IsNearlyZero(ActionValue.Y))
 		{
-			const FVector ForwardVector = UKismetMathLibrary::GetForwardVector(CameraYawRotator);
-			AddMovementInput(ForwardVector, ActionValue.Y);
+			FVector CameraForwardVector = VRCamera->GetForwardVector();
+			AddMovementInput(CameraForwardVector, ActionValue.Y);
 		}
 
 		if (!FMath::IsNearlyZero(ActionValue.X))
 		{
-			const FVector RightVector = UKismetMathLibrary::GetRightVector(CameraYawRotator);
-			AddMovementInput(RightVector, ActionValue.X);
+			FVector CameraRightVector = VRCamera->GetRightVector();
+			AddMovementInput(CameraRightVector, ActionValue.X);
 		}
 	}
 }
@@ -222,6 +231,7 @@ void AVRCharacter::Grab(UMotionControllerComponent* InController)
 			if (UGrabComponent* GrabComponent = Hit.GetActor()->GetComponentByClass<UGrabComponent>())
 			{
 				Hit.GetActor()->AttachToComponent(InController, FAttachmentTransformRules::KeepWorldTransform);
+				GrabComponent->Grab(InController->GetComponentTransform());
 			}
 		}
 	}
@@ -272,21 +282,21 @@ void AVRCharacter::OnLeftIndexTriggered(const FInputActionValue& InputActionValu
 	{
 		RidingSubMarine->BulletFire();
 	}
-	LeftInteraction->PressPointerKey(EKeys::LeftMouseButton);
 }
 
 void AVRCharacter::OnLeftIndexCompleted(const FInputActionValue& InputActionValue)
 {
-	LeftInteraction->ReleasePointerKey(EKeys::LeftMouseButton);
 }
 
 void AVRCharacter::OnRightIndexTriggered(const FInputActionValue& InputActionValue)
 {
+	RightInteraction->bShowDebug = true;
 	RightInteraction->PressPointerKey(EKeys::LeftMouseButton);
 }
 
 void AVRCharacter::OnRightIndexCompleted(const FInputActionValue& InputActionValue)
 {
+	RightInteraction->bShowDebug = false;
 	RightInteraction->ReleasePointerKey(EKeys::LeftMouseButton);
 }
 

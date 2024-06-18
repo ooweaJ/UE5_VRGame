@@ -29,6 +29,12 @@ private:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* SpawnPoint;
 
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* SpawnParicle;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* SpawnSound;
+
 	TSubclassOf<class ABall> BallClass;
 	FTimerHandle SpawnTimerHandle;
 };

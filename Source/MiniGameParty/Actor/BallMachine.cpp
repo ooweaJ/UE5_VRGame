@@ -1,6 +1,6 @@
 #include "Actor/BallMachine.h"
 #include "Actor/Projectile/Ball.h"
-
+#include "Kismet/GameplayStatics.h"
 
 ABallMachine::ABallMachine()
 {
@@ -22,6 +22,7 @@ ABallMachine::ABallMachine()
 			BallClass = Class.Class;
 		}
 	}
+
 }
 
 void ABallMachine::BeginPlay()
@@ -42,6 +43,12 @@ void ABallMachine::SpawnBall()
 	{
 		FVector SpawnLocation = SpawnPoint->GetComponentLocation();
 		FRotator SpawnRotation = SpawnPoint->GetComponentRotation();
+
+		if (SpawnParicle)
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SpawnParicle, SpawnLocation, SpawnRotation, true);
+
+		if (SpawnSound)
+			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SpawnSound, SpawnLocation);
 
 		GetWorld()->SpawnActor<ABall>(BallClass, SpawnLocation, SpawnRotation);
 	}

@@ -92,8 +92,6 @@ public:
 	UHandGraph* HandGraphRight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UWidgetInteractionComponent* LeftInteraction;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UWidgetInteractionComponent* RightInteraction;
 
 private:

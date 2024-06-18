@@ -19,7 +19,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void HitBat(FVector AddForce);
-
+	UFUNCTION()
+	void OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 private:
 	UPROPERTY(VisibleDefaultsOnly)
 	class USphereComponent* Sphere;

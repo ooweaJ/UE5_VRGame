@@ -16,6 +16,7 @@ public:
 	// Sets default values for this component's properties
 	UGrabComponent();
 
+	void Grab(FTransform TargetTransform);
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

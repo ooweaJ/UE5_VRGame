@@ -6,6 +6,13 @@ UGrabComponent::UGrabComponent()
 
 }
 
+void UGrabComponent::Grab(FTransform TargetTransform)
+{
+	AActor* Owner = GetOwner();
+	Owner->SetActorTransform(TargetTransform);
+	Owner->AddActorLocalRotation(FRotator(-90,0,0));
+	Owner->AddActorLocalOffset(-GetRelativeLocation());
+}
 
 void UGrabComponent::BeginPlay()
 {
