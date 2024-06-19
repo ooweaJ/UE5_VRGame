@@ -37,8 +37,6 @@ void ABat::Tick(float DeltaTime)
 	float Mass = 1.0f;
 	FVector Acceleration = CurrentVelocity / DeltaTime;
 	Force = Mass * Acceleration;
-
-	GEngine->AddOnScreenDebugMessage(1, DeltaTime, FColor::Blue, Force.ToString());
 }
 
 void ABat::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

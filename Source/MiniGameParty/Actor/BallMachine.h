@@ -19,6 +19,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void SpawnBall();
+	void SetDistnace(float Input);
 private:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* Scene;
@@ -37,4 +38,9 @@ private:
 
 	TSubclassOf<class ABall> BallClass;
 	FTimerHandle SpawnTimerHandle;
+
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* Score;
+
+	class UUI_Distance* Distance;
 };

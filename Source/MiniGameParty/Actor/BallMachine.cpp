@@ -1,6 +1,8 @@
 #include "Actor/BallMachine.h"
 #include "Actor/Projectile/Ball.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/WidgetComponent.h"
+#include "Widgets/UI_Distance.h"
 
 ABallMachine::ABallMachine()
 {
@@ -23,12 +25,26 @@ ABallMachine::ABallMachine()
 		}
 	}
 
+	{
+		ConstructorHelpers::FClassFinder<UUserWidget> Class(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/_Dev/UI/UI_Score.UI_Score_C'"));
+		if (!Class.Succeeded()) return;
+
+		Score = CreateDefaultSubobject<UWidgetComponent>(TEXT("Score"));
+		Score->SetupAttachment(RootComponent);
+		FTransform Transform;
+		Transform.SetLocation(FVector(0, 0, 250));
+		Score->SetRelativeTransform(Transform);
+		Score->SetWidgetClass(Class.Class);
+	}
 }
 
 void ABallMachine::BeginPlay()
 {
 	Super::BeginPlay();
+
 	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ThisClass::SpawnBall, 5.0f, true);
+
+	Distance = Cast<UUI_Distance>(Score->GetUserWidgetObject());
 }
 
 void ABallMachine::Tick(float DeltaTime)
@@ -41,8 +57,11 @@ void ABallMachine::SpawnBall()
 {
 	if (BallClass)
 	{
+		FTransform DefaultTransform;
 		FVector SpawnLocation = SpawnPoint->GetComponentLocation();
 		FRotator SpawnRotation = SpawnPoint->GetComponentRotation();
+		DefaultTransform.SetLocation(SpawnLocation);
+		DefaultTransform.SetRotation(SpawnRotation.Quaternion());
 
 		if (SpawnParicle)
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SpawnParicle, SpawnLocation, SpawnRotation, true);
@@ -50,7 +69,15 @@ void ABallMachine::SpawnBall()
 		if (SpawnSound)
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SpawnSound, SpawnLocation);
 
-		GetWorld()->SpawnActor<ABall>(BallClass, SpawnLocation, SpawnRotation);
+		ABall* Ball = GetWorld()->SpawnActorDeferred<ABall>(BallClass, DefaultTransform, this);
+		Ball->SetSpeed();
+		Ball->FinishSpawning(DefaultTransform, true);
 	}
+}
+
+void ABallMachine::SetDistnace(float Input)
+{
+	Distance->SetDistance(Input);
+	GEngine->AddOnScreenDebugMessage(2, 3, FColor::Blue, FString::FromInt(Input));
 }
 
