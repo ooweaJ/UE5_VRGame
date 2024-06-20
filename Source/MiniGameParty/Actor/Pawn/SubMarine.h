@@ -91,6 +91,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float FireRate = 0.5f;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* SpawnSound;
+
 	class UUI_SubMarine* SubMarineMenu;
 private:
 	class AVRCharacter* RidingCharacter;

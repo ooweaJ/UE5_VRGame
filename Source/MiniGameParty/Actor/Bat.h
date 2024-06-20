@@ -30,6 +30,9 @@ private:
 	USkeletalMeshComponent* Mesh;
 
 	FVector Force;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* HitSound;
 private:
 
 	FVector PreviousLocation;

@@ -43,6 +43,8 @@ void ABat::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 {
 	if(ABall* Ball = Cast<ABall>(OtherActor))
 	{
+		if (HitSound)
+			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), HitSound, Hit.Location);
 		Ball->HitBat(Force);
 	}
 }

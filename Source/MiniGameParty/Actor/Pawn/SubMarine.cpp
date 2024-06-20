@@ -118,7 +118,7 @@ float ASubMarine::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	GEngine->AddOnScreenDebugMessage(0, 3.f, FColor::Red, FString::SanitizeFloat(DamageAmount));
-	Window += FVector(0.25, 0.25, 0.25);
+	Window += FVector(1, 1, 1);
 	Hit(Window);
 	return 0.0f;
 }
@@ -274,9 +274,12 @@ void ASubMarine::BulletFire()
 	bFire = true;
 	FTransform DefaultTransform;
 	DefaultTransform.SetLocation(MuzzleOffSet->GetComponentLocation());
+
 	ABullet* SpawnedActor = GetWorld()->SpawnActorDeferred<ABullet>(BulletClass, DefaultTransform, this, this, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	SpawnedActor->SetVelocity(GetActorForwardVector());
 	SpawnedActor->FinishSpawning(DefaultTransform, true);
+	if (SpawnSound)
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SpawnSound, MuzzleOffSet->GetComponentLocation());
 	UKismetSystemLibrary::K2_SetTimer(this, "OnFire", FireRate, false);
 }
 
