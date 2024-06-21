@@ -117,7 +117,6 @@ void ASubMarine::BeginPlay()
 float ASubMarine::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	GEngine->AddOnScreenDebugMessage(0, 3.f, FColor::Red, FString::SanitizeFloat(DamageAmount));
 	Window += FVector(1, 1, 1);
 	Hit(Window);
 	return 0.0f;
@@ -174,6 +173,7 @@ void ASubMarine::OnRiding()
 		AVRCharacter* VRCharacter = Cast<AVRCharacter>(PlayerController->GetCharacter());
 		VRCharacter->OnRiding(this);
 		RidingCharacter = VRCharacter;
+		SubMarineMenu->OnRiding();
 	}
 }
 
@@ -242,10 +242,8 @@ void ASubMarine::OnFire()
 
 void ASubMarine::CalculateSteering(float InputValue)
 {
-	// 회전 값을 적용
 	FRotator AverageRotation = FRotator(0, 0, InputValue);
 
-	// 운전대에 상대적 회전 적용
 	SteeringWheel->AddRelativeRotation(AverageRotation.Quaternion());
 
 	float SteeringWheelPitch = SteeringWheel->GetRelativeRotation().Pitch;

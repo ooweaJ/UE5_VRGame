@@ -25,3 +25,8 @@ void UUI_SubMarine::SelectAuto(bool IsAuto)
 	else
 		Auto->SetBackgroundColor(FLinearColor(1, 1, 1));
 }
+
+void UUI_SubMarine::OnRiding()
+{
+	Riding->SetBackgroundColor(FLinearColor(1, 0, 0));
+}

@@ -78,6 +78,5 @@ void ABallMachine::SpawnBall()
 void ABallMachine::SetDistnace(float Input)
 {
 	Distance->SetDistance(Input);
-	GEngine->AddOnScreenDebugMessage(2, 3, FColor::Blue, FString::FromInt(Input));
 }
 

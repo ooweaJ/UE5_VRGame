@@ -45,11 +45,6 @@ void USubMarineMovementComponent::SetPawnOwner(ASubMarine* Pawn)
 
 void USubMarineMovementComponent::CollisionDetection(float DeltaTime)
 {
-    if (!OwnerPawn || !UpdatedComponent || ShouldSkipUpdate(DeltaTime))
-    {
-        return;
-    }
-
     FVector DesiredMovementThisFrame = Velocity * DeltaTime;
 
     if (!DesiredMovementThisFrame.IsNearlyZero())
@@ -60,9 +55,9 @@ void USubMarineMovementComponent::CollisionDetection(float DeltaTime)
         if (Hit.IsValidBlockingHit())
         {
             FVector ImpactDirection = Hit.ImpactNormal;
-            DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + ImpactDirection * 100.f, FColor::Green, false, 10.f, 0, 1.f);
             float DotProduct = FVector::DotProduct(ImpactDirection, Velocity.GetSafeNormal());
 
+            DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + ImpactDirection * 100.f, FColor::Green, false, 10.f, 0, 1.f);
             float DelaySize = Velocity.Size() / MaxSpeedGear[(int32)ESubmarineGear::Gear3];
 
             if (DotProduct < -0.5)
@@ -125,7 +120,7 @@ void USubMarineMovementComponent::UpdateMaxSpeed(ESubmarineGear InputGear)
 void USubMarineMovementComponent::InputVector(FVector Input)
 {
     if (bBlocking) return;
-    Velocity += Input * OwnerPawn->MaxForce * (MaxSpeed/500.f);
+    Velocity += Input * OwnerPawn->MaxForce * ((int32)CurrentGear + 1);
     
     float CurrentSpeed = Velocity.Size();
 

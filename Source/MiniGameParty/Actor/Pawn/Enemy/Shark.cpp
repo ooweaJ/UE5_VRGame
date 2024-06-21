@@ -38,7 +38,6 @@ void AShark::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Head->OnComponentHit.AddDynamic(this, &ThisClass::OnComponentHit);
 	{
 		TimelineFloat.BindUFunction(this, "SharkMove");
 		TimelineFinished.BindUFunction(this, FName("TimelineHandle"));
@@ -48,6 +47,7 @@ void AShark::BeginPlay()
 		Timeline.PlayFromStart();
 	}
 
+	Head->OnComponentHit.AddDynamic(this, &ThisClass::OnComponentHit);
 	ReturnLocation = GetActorLocation();
 }
 
