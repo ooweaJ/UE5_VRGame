@@ -102,7 +102,7 @@ void AShark::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActo
 	if (!!ImpactParticle)
 	{
 		FVector location = Hit.Location;
-		FRotator Rotation;
+		FRotator Rotation = FRotator::ZeroRotator;;
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticle, location, Rotation);
 	}
 
